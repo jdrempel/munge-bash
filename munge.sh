@@ -61,6 +61,10 @@ XBOX_COPY=1
 
 # -------------- PROCESS COMMAND LINE ARGS ------------------
 
+if [[ $# -le 1 ]]; then
+    print_help_and_exit 0
+fi
+
 while [[ -n $1 ]]; do
 
     case $1 in
@@ -324,9 +328,12 @@ fi
 if [[ $MUNGE_PLATFORM == XBOX ]]; then
     if [[ XBOX_COPY -eq 1 ]]; then
         echo "Copying files to XBOX..."
-		xbcp -d -y -t -r -f ../_lvl_xbox/*.lvl xe:\Battlefront2\Data\_lvl_xbox\ 2>>$MUNGE_LOG
-		xbcp -d -y -t -r -f ../_lvl_xbox/*.mvs xe:\Battlefront2\Data\_lvl_xbox\ 2>>$MUNGE_LOG
-		xbcp -d -y -t -r -f ../sound/global/dsstdfx.bin xe:\Battlefront2\Data\  2>>$MUNGE_LOG
+        xbcp -d -y -t -r -f ../_lvl_xbox/*.lvl xe:\\Battlefront2\\Data\\_lvl_xbox\\ \
+            2>>$MUNGE_LOG
+		xbcp -d -y -t -r -f ../_lvl_xbox/*.mvs xe:\\Battlefront2\\Data\\_lvl_xbox\\ \
+            2>>$MUNGE_LOG
+		xbcp -d -y -t -r -f ../sound/global/dsstdfx.bin xe:\\Battlefront2\\Data\\ \
+            2>>$MUNGE_LOG
     fi
 fi
 
