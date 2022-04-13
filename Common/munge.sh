@@ -121,7 +121,7 @@ for STM in $MUNGE_ROOT_DIR/Common/Sound/*.stm; do
     wine SoundFLMunge -platform ${MUNGE_PLATFORM,,} -banklistinput $STM -bankoutput $MUNGE_DIR/ -stream -checkdate -checkid -resample $SOUNDOPT 2>>$MUNGE_LOG 1>>$SOUNDLOGOUT
 done
 
-./munge_sprites.sh $MUNGE_PLATFORM  # TODO
+./munge_sprites.sh $MUNGE_PLATFORM
 
 # ---------------- Merge and munge localization files -----------------
 
