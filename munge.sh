@@ -35,7 +35,7 @@ print_help_and_exit() {
     echo "  --shell       If specified munges shell data"
     echo "  --movies      If specified munges movie data"
     echo "  --localize    If specified munges localization data"
-    echo "  --no-xbox-copy If specified skips the data copy to the xbox"
+    echo "  --noxboxcopy  If specified skips the data copy to the xbox"
     echo
 
     exit $1
@@ -152,7 +152,7 @@ while [[ -n $1 ]]; do
         shift
         ;;
 
-    /NOXBOXCOPY | --no-xbox-copy )
+    /NOXBOXCOPY | --noxboxcopy )
 
         XBOX_COPY=0
         shift
