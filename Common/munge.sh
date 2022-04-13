@@ -163,31 +163,31 @@ fi
 wine LevelPack -inputfile core.req -writefiles $MUNGE_DIR/core.files $MUNGE_ARGS \
     -sourcedir $SOURCE_DIR -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR \
     2>>$MUNGE_LOG
-mv -f levelpack.log levelpack_core.log
+mv -f LevelPack.log levelpack_core.log
 
 wine LevelPack -inputfile common.req -writefiles $MUNGE_DIR/common.files -common \
     $MUNGE_DIR/core.files $MUNGE_ARGS -sourcedir $SOURCE_DIR -inputdir $MUNGE_DIR \
     -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
-mv -f levelpack.log levelpack_common.log
+mv -f LevelPack.log levelpack_common.log
 
 wine LevelPack -inputfile ingame.req -writefiles $MUNGE_DIR/ingame.files -common \
     $MUNGE_DIR/core.files $MUNGE_DIR/common.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
     -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
-mv -f levelpack.log levelpack_ingame.log
+mv -f LevelPack.log levelpack_ingame.log
 
 wine LevelPack -inputfile inshell.req -writefiles $MUNGE_DIR/inshell.files -common \
     $MUNGE_DIR/core.files $MUNGE_DIR/common.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
     -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
-mv -f levelpack.log levelpack_inshell.log
+mv -f LevelPack.log levelpack_inshell.log
 
-wine LevelPack -inputfile mission/*.req -common $MUNGE_DIR/core.files \
+wine LevelPack -inputfile 'mission/*.req' -common $MUNGE_DIR/core.files \
     $MUNGE_DIR/common.files $MUNGE_DIR/ingame.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
     -inputdir $MUNGE_DIR -outputdir $MUNGE_DIR 2>>$MUNGE_LOG
-mv -f levelpack.log levelpack_missions.log
+mv -f LevelPack.log levelpack_missions.log
 
 wine LevelPack -inputfile mission.req $MUNGE_ARGS -sourcedir $SOURCE_DIR -inputdir \
     $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
-mv -f levelpack.log levelpack_mission.log
+mv -f LevelPack.log levelpack_mission.log
 
 ./munge_fpm.sh $MUNGE_PLATFORM  # TODO
 
