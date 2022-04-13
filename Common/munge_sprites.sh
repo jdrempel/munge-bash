@@ -49,14 +49,11 @@ if [[ -n $MUNGE_OVERRIDE_DIR ]]; then
 fi
 SOURCE_DIR="$SOURCE_DIR $MUNGE_ROOT_DIR/$SOURCE_SUBDIR"
 
-if [[ ! -e ../Sides/ALL/MUNGED ]]; then
-    mkdir -p ../Sides/ALL/MUNGED
-fi
+mkdir -p ../Sides/ALL/MUNGED
+
 SIDES=(ALL CIS IMP REP)
 for SIDE in "${SIDES[@]}"; do
-    if [[ ! -e ../Sides/${SIDE}/$MUNGE_DIR ]]; then
-        mkdir -p ../Sides/${SIDE}/$MUNGE_DIR
-    fi
+    mkdir -p ../Sides/${SIDE}/$MUNGE_DIR
 done
 
 SPRITES=(

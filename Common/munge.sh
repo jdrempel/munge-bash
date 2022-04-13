@@ -57,13 +57,8 @@ SOURCE_DIR="${SOURCE_DIR} ${MUNGE_ROOT_DIR}/${SOURCE_SUBDIR}"
 
 # ------------ Copy Common binary format data from source root Common/ ----------
 
-if [[ ! -e MUNGED ]]; then
-    mkdir MUNGED
-fi
-
-if [[ ! -e $MUNGE_DIR ]]; then
-    mkdir -p $MUNGE_DIR
-fi
+mkdir MUNGED
+mkdir -p $MUNGE_DIR
 
 echo "Copying premunged files from MUNGED..."
 if [[ -e ${MUNGE_ROOT_DIR}/${SOURCE_SUBDIR}/MUNGED ]]; then
@@ -156,9 +151,7 @@ rm -rf $MUNGE_TEMP
 
 # ------------ Build LVL files -----------------
 
-if [[ ! -e $MUNGE_ROOT_DIR/_LVL_$MUNGE_PLATFORM/COMMON ]]; then
-    mkdir -p $MUNGE_ROOT_DIR/_LVL_$MUNGE_PLATFORM/COMMON
-fi
+mkdir -p $MUNGE_ROOT_DIR/_LVL_$MUNGE_PLATFORM/COMMON
 
 wine LevelPack -inputfile core.req -writefiles $MUNGE_DIR/core.files $MUNGE_ARGS \
     -sourcedir $SOURCE_DIR -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR \
