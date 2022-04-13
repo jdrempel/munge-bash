@@ -7,8 +7,8 @@
 #######################################################
 
 # Useful for debugging when enabled
-set -e
-set -x
+# set -e
+# set -x
 
 # Allow filename patterns which match no files to expand to a null string
 shopt -s nullglob
@@ -26,9 +26,7 @@ TEMP_DIR=$3
 
 # Copy and merge the two text files for each language
 
-if [[ ! -e "$TEMP_DIR" ]]; then
-    mkdir -p $TEMP_DIR
-fi
+mkdir -p $TEMP_DIR
 
 for CFG in ${SOURCE1_DIR}/*.cfg ${SOURCE2_DIR}/*.cfg; do
     echo "Merging $CFG..."

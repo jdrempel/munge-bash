@@ -7,8 +7,8 @@
 #######################################################
 
 # Useful for debugging when enabled
-set -e
-set -x
+# set -e
+# set -x
 
 # Allow filename patterns which match no files to expand to a null string
 shopt -s nullglob
