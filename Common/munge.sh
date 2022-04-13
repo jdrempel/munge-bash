@@ -192,15 +192,16 @@ mv -f LevelPack.log levelpack_mission.log
 ./munge_fpm.sh $MUNGE_PLATFORM  # TODO
 
 # If the munge log was created and has anything in it, view it
-if [[ $MUNGE_LOG == $LOCAL_MUNGE_LOG ]]; then
-    if [[ -e $MUNGE_LOG ]]; then
-        for LOGFILE in $MUNGE_LOG; do
-            if [[ $(wc -l $LOGFILE) -gt 0 ]]; then
-                $EDITOR $LOGFILE
-            else
-                rm -f $LOGFILE
-            fi
-        done
-    fi
-fi
+# TODO wc ends up with division by 0
+# if [[ $MUNGE_LOG == $LOCAL_MUNGE_LOG ]]; then
+#     if [[ -e $MUNGE_LOG ]]; then
+#         for LOGFILE in $MUNGE_LOG; do
+#             if [[ $(wc -l $LOGFILE) -gt 0 ]]; then
+#                 $EDITOR $LOGFILE
+#             else
+#                 rm -f $LOGFILE
+#             fi
+#         done
+#     fi
+# fi
 
