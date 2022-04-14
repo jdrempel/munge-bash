@@ -6,42 +6,7 @@
 # Date: 12 Apr 2022                                   #
 #######################################################
 
-# Useful for debugging when enabled
-# set -e
-# set -x
-
-# Allow filename patterns which match no files to expand to a null string
-shopt -s nullglob
-
-MUNGE_ROOT_DIR=../..
-
-if [[ -n $1 ]]; then
-    MUNGE_PLATFORM=$1
-fi
-
-if [[ -z $MUNGE_PLATFORM ]]; then
-    MUNGE_PLATFORM=PC
-fi
-
-if [[ -z $MUNGE_LANGDIR ]]; then
-    MUNGE_LANGDIR=ENG
-fi
-
-MUNGE_BIN_DIR=$(pwd)/${MUNGE_ROOT_DIR}/../ToolsFL/bin
-export WINEPATH=$(pwd)/../../../ToolsFL/bin
-
-MUNGE_ARGS="-checkdate -continue -platform $MUNGE_PLATFORM"
-SHADER_MUNGE_ARGS="-continue -platform $MUNGE_PLATFORM"
-MUNGE_DIR=MUNGED/$MUNGE_PLATFORM
-OUTPUT_DIR=${MUNGE_ROOT_DIR}/_LVL_${MUNGE_PLATFORM}
-
-LOCAL_MUNGE_LOG=$(pwd)/${MUNGE_PLATFORM}_MungeLog.txt
-if [[ -z $MUNGE_LOG ]]; then
-    MUNGE_LOG=$LOCAL_MUNGE_LOG
-    if [[ -e $LOCAL_MUNGE_LOG ]]; then
-        rm -vf $LOCAL_MUNGE_LOG
-    fi
-fi
+source ../utils.sh $1
 
 # ----------- Handle files in Common/ -------------
 
@@ -57,7 +22,7 @@ SOURCE_DIR="${SOURCE_DIR} ${MUNGE_ROOT_DIR}/${SOURCE_SUBDIR}"
 
 # ------------ Copy Common binary format data from source root Common/ ----------
 
-mkdir MUNGED
+mkdir -p MUNGED
 mkdir -p $MUNGE_DIR
 
 echo "Copying premunged files from MUNGED..."
@@ -70,40 +35,16 @@ if [[ -e ${MUNGE_ROOT_DIR}/${SOURCE_SUBDIR}/${MUNGE_DIR} ]]; then
     cp -ru $MUNGE_ROOT_DIR/$SOURCE_SUBDIR/$MUNGE_DIR/*.* $MUNGE_DIR
 fi
 
-wine OdfMunge -inputfile '$*.odf' $MUNGE_ARGS -sourcedir $SOURCE_DIR -outputdir \
-    $MUNGE_DIR 2>>$MUNGE_LOG
-
-wine ConfigMunge -inputfile '$*.fx' $MUNGE_ARGS -sourcedir $SOURCE_DIR -outputdir \
-    $MUNGE_DIR 2>>$MUNGE_LOG
-mv -f ConfigMunge.log configmunge_fx.log
-
-wine ConfigMunge -inputfile '$*.combo' $MUNGE_ARGS -sourcedir $SOURCE_DIR -outputdir \
-    $MUNGE_DIR 2>>$MUNGE_LOG
-mv -f ConfigMunge.log configmunge_combo.log
-
-wine ScriptMunge -inputfile '$*.lua' $MUNGE_ARGS -sourcedir $SOURCE_DIR -outputdir \
-    $MUNGE_DIR 2>>$MUNGE_LOG
-
-wine ConfigMunge -inputfile '$*.mcfg' $MUNGE_ARGS -sourcedir $SOURCE_DIR -outputdir \
-    $MUNGE_DIR -hashstrings 2>>$MUNGE_LOG
-mv -f ConfigMunge.log configmunge_mcfg.log
-
-wine ConfigMunge -inputfile '$*.sanm' $MUNGE_ARGS -sourcedir $SOURCE_DIR -outputdir \
-    $MUNGE_DIR 2>>$MUNGE_LOG
-mv -f ConfigMunge.log configmunge_sanm.log
-
-wine ConfigMunge -inputfile '$*.hud' $MUNGE_ARGS -sourcedir $SOURCE_DIR -outputdir \
-    $MUNGE_DIR 2>>$MUNGE_LOG
-mv -f ConfigMunge.log configmunge_hud.log
-
-wine FontMunge -inputfile '$*.fff' $MUNGE_ARGS -sourcedir $SOURCE_DIR -outputdir \
-    $MUNGE_DIR 2>>$MUNGE_LOG
-
-wine ${MUNGE_PLATFORM}_TextureMunge -inputfile '$*.tga $*.pic' $MUNGE_ARGS -sourcedir \
-    $SOURCE_DIR -outputdir $MUNGE_DIR 2>>$MUNGE_LOG
-
-wine ${MUNGE_PLATFORM}_ModelMunge -inputfile '$effects\*.msh' '$mshs\*.msh' $MUNGE_ARGS \
-    -sourcedir $SOURCE_DIR -outputdir $MUNGE_DIR 2>>$MUNGE_LOG
+odf_munge '$*.odf'
+config_munge '$*.fx' && mv -f ConfigMunge.log configmunge_fx.log
+config_munge '$*.combo' && mv -f ConfigMunge.log configmunge_combo.log
+script_munge '$*.lua'
+config_munge '$*.mcfg' && mv -f ConfigMunge.log configmunge_mcfg.log
+config_munge '$*.sanm' && mv -f ConfigMunge.log configmunge_sanm.log
+config_munge '$*.hud' && mv -f ConfigMunge.log configmunge_hud.log
+font_munge '$*.fff'
+texture_munge '$*.tga' '$*.pic'
+model_munge '$effects/*.msh' '$mshs/*.msh'
 
 if [[ $MUNGE_PLATFORM != PS2 ]]; then
 # TODO what does the -I mean and is it important? nothing in the helptext for the exe
@@ -122,6 +63,7 @@ else
     SOUNDLOGOUT=/dev/null
 fi
 
+# TODO account for these different sourcedirs in munge()
 wine ConfigMunge -inputfile '*.snd' '*.mus' $MUNGE_ARGS -sourcedir $SOURCE_DIR/Sound \
     -outputdir $MUNGE_DIR/ -hashstrings 2>>$MUNGE_LOG
 for SFX in $MUNGE_ROOT_DIR/Common/Sound/*.sfx; do
@@ -142,10 +84,9 @@ INPUT_DIR1=$MUNGE_ROOT_DIR/Common/Localize/$MUNGE_PLATFORM
 INPUT_DIR2=$MUNGE_ROOT_DIR/Common/Localize
 MUNGE_TEMP=MungeTemp
 
-./merge_localize.sh $INPUT_DIR1 $INPUT_DIR2 $MUNGE_TEMP  # TODO
+./merge_localize.sh $INPUT_DIR1 $INPUT_DIR2 $MUNGE_TEMP
 # Perform munging
-wine LocalizeMunge -inputfile '*.cfg' $MUNGE_ARGS -sourcedir $MUNGE_TEMP -outputdir \
-    $MUNGE_DIR 2>>$MUNGE_LOG
+localize_munge '*.cfg'
 # Clean up
 rm -rf $MUNGE_TEMP
 
@@ -153,36 +94,36 @@ rm -rf $MUNGE_TEMP
 
 mkdir -p $MUNGE_ROOT_DIR/_LVL_$MUNGE_PLATFORM/COMMON
 
-wine LevelPack -inputfile core.req -writefiles $MUNGE_DIR/core.files $MUNGE_ARGS \
-    -sourcedir $SOURCE_DIR -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR \
-    2>>$MUNGE_LOG
+level_pack core.req $OUTPUT_DIR $MUNGE_DIR/core.files
 mv -f LevelPack.log levelpack_core.log
 
-wine LevelPack -inputfile common.req -writefiles $MUNGE_DIR/common.files -common \
-    $MUNGE_DIR/core.files $MUNGE_ARGS -sourcedir $SOURCE_DIR -inputdir $MUNGE_DIR \
-    -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
+level_pack common.req $OUTPUT_DIR $MUNGE_DIR/common.files
 mv -f LevelPack.log levelpack_common.log
 
-wine LevelPack -inputfile ingame.req -writefiles $MUNGE_DIR/ingame.files -common \
-    $MUNGE_DIR/core.files $MUNGE_DIR/common.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
-    -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
+level_pack ingame.req $OUTPUT_DIR 'core.files common.files' ingame.files
+# wine LevelPack -inputfile ingame.req -writefiles $MUNGE_DIR/ingame.files -common \
+#     $MUNGE_DIR/core.files $MUNGE_DIR/common.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
+#     -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
 mv -f LevelPack.log levelpack_ingame.log
 
-wine LevelPack -inputfile inshell.req -writefiles $MUNGE_DIR/inshell.files -common \
-    $MUNGE_DIR/core.files $MUNGE_DIR/common.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
-    -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
+level_pack inshell.req $OUTPUT_DIR 'core.files common.files' inshell.files
+# wine LevelPack -inputfile inshell.req -writefiles $MUNGE_DIR/inshell.files -common \
+#     $MUNGE_DIR/core.files $MUNGE_DIR/common.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
+#     -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
 mv -f LevelPack.log levelpack_inshell.log
 
-wine LevelPack -inputfile 'mission/*.req' -common $MUNGE_DIR/core.files \
-    $MUNGE_DIR/common.files $MUNGE_DIR/ingame.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
-    -inputdir $MUNGE_DIR -outputdir $MUNGE_DIR 2>>$MUNGE_LOG
+level_pack 'mission/*.req' $MUNGE_DIR 'core.files common.files ingame.files'
+# wine LevelPack -inputfile 'mission/*.req' -common $MUNGE_DIR/core.files \
+#     $MUNGE_DIR/common.files $MUNGE_DIR/ingame.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
+#     -inputdir $MUNGE_DIR -outputdir $MUNGE_DIR 2>>$MUNGE_LOG
 mv -f LevelPack.log levelpack_missions.log
 
-wine LevelPack -inputfile mission.req $MUNGE_ARGS -sourcedir $SOURCE_DIR -inputdir \
-    $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
+level_pack mission.req $OUTPUT_DIR
+# wine LevelPack -inputfile mission.req $MUNGE_ARGS -sourcedir $SOURCE_DIR -inputdir \
+#     $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
 mv -f LevelPack.log levelpack_mission.log
 
-./munge_fpm.sh $MUNGE_PLATFORM  # TODO
+./munge_fpm.sh $MUNGE_PLATFORM
 
 # If the munge log was created and has anything in it, view it
 # TODO wc ends up with division by 0

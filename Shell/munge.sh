@@ -115,7 +115,6 @@ wine LevelPack -inputfile shell.req -common ../Common/MUNGED/$MUNGE_PLATFORM/cor
     ../Common/MUNGED/$MUNGE_PLATFORM/common.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
     -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
 
-echo $?
 if [[ $MUNGE_PLATFORM == PS2 ]]; then
     wine LevelPack -inputfile shellps2.req -common \
         ../Common/MUNGED/$MUNGE_PLATFORM/core.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
