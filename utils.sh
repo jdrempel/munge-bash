@@ -50,19 +50,17 @@ fi
 
 # ---------- MUNGERS -----------
 
-: 'Performs a generic munge operation. Positional args are:
-    $1: munger binary prefix (e.g. Config or Odf)
-    $2,3,4: input files'
+# Performs a generic munge operation. Positional args are:
+#   $1: munger binary prefix (e.g. Config or Odf)
+#   $2,3,4: input files'
 munge () {
 
     ARGS=("$@")
-    PP= 
-    [[ $1 =~ Model|Shader|Texture ]] && PP=${MUNGE_PLATFORM,,}_
 
     HASH=
     [[ $1 =~ Movie || "$@" =~ mcfg ]] && HASH=-hashstrings
 
-    wine $PP${1}Munge \
+    wine ${1}Munge \
         -inputfile "${ARGS[@]:1:3}" \
         $MUNGE_ARGS \
         -sourcedir $SOURCE_DIR \
@@ -101,15 +99,15 @@ path_munge () {
 }
 
 model_munge () {
-    munge Model "$@"
+    munge ${MUNGE_PLATFORM,,}_Model "$@"
 }
 
 shader_munge () {
-    munge Shader "$@"
+    munge ${MUNGE_PLATFORM,,}_Shader "$@"
 }
 
 texture_munge () {
-    munge Texture "$@"
+    munge ${MUNGE_PLATFORM,,}_Texture "$@"
 }
 
 script_munge () {
@@ -138,11 +136,12 @@ world_munge () {
 
 # ------------ LEVEL PACKING ------------
 
-: 'Invokes LevelPack.exe. Positional args are:
-    $1: Input file(s)
-    $2: Output directory
-    [$3]: Arguments for -common
-    [$4]: Arguments for -writefiles'
+# Invokes LevelPack.exe. Positional args are:
+#   $1: Input file(s)
+#   $2: Output directory
+#   [$3]: Arguments for -common
+#   [$4]: Arguments for -writefiles'
+#
 level_pack () {
 
     COMMON= 
