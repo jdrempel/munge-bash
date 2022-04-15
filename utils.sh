@@ -175,6 +175,7 @@ level_pack () {
         -sourcedir $SOURCE_DIR \
         -inputdir $MUNGE_DIR \
         -outputdir $2 \
+        # -debug \
         2>>$MUNGE_LOG
 }
 

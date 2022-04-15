@@ -94,16 +94,16 @@ rm -rf $MUNGE_TEMP
 
 mkdir -p $MUNGE_ROOT_DIR/_LVL_$MUNGE_PLATFORM/COMMON
 
-level_pack core.req $OUTPUT_DIR $MUNGE_DIR/core.files
+level_pack core.req $OUTPUT_DIR '' 'core.files'
 mv -f LevelPack.log levelpack_core.log
 
-level_pack common.req $OUTPUT_DIR $MUNGE_DIR/common.files
+level_pack common.req $OUTPUT_DIR 'core.files' 'common.files'
 mv -f LevelPack.log levelpack_common.log
 
-level_pack ingame.req $OUTPUT_DIR 'core.files common.files' ingame.files
+level_pack ingame.req $OUTPUT_DIR 'core.files common.files' 'ingame.files'
 mv -f LevelPack.log levelpack_ingame.log
 
-level_pack inshell.req $OUTPUT_DIR 'core.files common.files' inshell.files
+level_pack inshell.req $OUTPUT_DIR 'core.files common.files' 'inshell.files'
 mv -f LevelPack.log levelpack_inshell.log
 
 level_pack 'mission/*.req' $MUNGE_DIR 'core.files common.files ingame.files'
