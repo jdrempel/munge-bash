@@ -6,7 +6,7 @@
 # Date: 12 Apr 2022                                   #
 #######################################################
 
-source ../utils.sh $1
+source ../utils.sh $1 debug
 
 # ----------- Handle files in Common/ -------------
 
@@ -101,26 +101,15 @@ level_pack common.req $OUTPUT_DIR $MUNGE_DIR/common.files
 mv -f LevelPack.log levelpack_common.log
 
 level_pack ingame.req $OUTPUT_DIR 'core.files common.files' ingame.files
-# wine LevelPack -inputfile ingame.req -writefiles $MUNGE_DIR/ingame.files -common \
-#     $MUNGE_DIR/core.files $MUNGE_DIR/common.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
-#     -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
 mv -f LevelPack.log levelpack_ingame.log
 
 level_pack inshell.req $OUTPUT_DIR 'core.files common.files' inshell.files
-# wine LevelPack -inputfile inshell.req -writefiles $MUNGE_DIR/inshell.files -common \
-#     $MUNGE_DIR/core.files $MUNGE_DIR/common.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
-#     -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
 mv -f LevelPack.log levelpack_inshell.log
 
 level_pack 'mission/*.req' $MUNGE_DIR 'core.files common.files ingame.files'
-# wine LevelPack -inputfile 'mission/*.req' -common $MUNGE_DIR/core.files \
-#     $MUNGE_DIR/common.files $MUNGE_DIR/ingame.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
-#     -inputdir $MUNGE_DIR -outputdir $MUNGE_DIR 2>>$MUNGE_LOG
 mv -f LevelPack.log levelpack_missions.log
 
 level_pack mission.req $OUTPUT_DIR
-# wine LevelPack -inputfile mission.req $MUNGE_ARGS -sourcedir $SOURCE_DIR -inputdir \
-#     $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
 mv -f LevelPack.log levelpack_mission.log
 
 ./munge_fpm.sh $MUNGE_PLATFORM

@@ -6,30 +6,7 @@
 # Date: 12 Apr 2022                                   #
 #######################################################
 
-# Useful for debugging when enabled
-# set -e
-# set -x
-
-# Allow filename patterns which match no files to expand to a null string
-shopt -s nullglob
-
-MUNGE_ROOT_DIR=../..
-if [[ -n $1 ]]; then
-    MUNGE_PLATFORM=$1
-fi
-
-if [[ -z $MUNGE_PLATFORM ]]; then
-    MUNGE_PLATFORM=PC
-fi
-
-if [[ -z $MUNGE_BIN_DIR ]]; then
-    MUNGE_BIN_DIR=$(pwd)/${MUNGE_ROOT_DIR}/../ToolsFL/bin
-fi
-export WINEPATH=$(pwd)/../../../ToolsFL/bin
-
-MUNGE_ARGS="-checkdate -continue -platform $MUNGE_PLATFORM"
-MUNGE_DIR=MUNGED/$MUNGE_PLATFORM
-OUTPUT_DIR=$MUNGE_ROOT_DIR/_LVL_$MUNGE_PLATFORM
+source ../utils.sh $1 debug
 
 LOCAL_MUNGE_LOG=$(pwd)/MungeSpritesLog.txt
 if [[ -z $MUNGE_LOG ]]; then
@@ -40,6 +17,7 @@ if [[ -z $MUNGE_LOG ]]; then
 fi
 
 # ----------- Handle files in Common/ ----------
+
 SOURCE_SUBDIR=Common
 SOURCE_DIR= 
 if [[ -n $MUNGE_OVERRIDE_DIR ]]; then
@@ -74,7 +52,7 @@ SPRITES=(
 )
 
 MUNGE_PLATFORM=${MUNGE_PLATFORM,,}
-for SPRITE in "$SPRITES[@]"; do
+for SPRITE in "${SPRITES[@]}"; do
     TEAM=${SPRITE::3}
     TEAM=${TEAM^^}
 # TODO Why does the next line fail?

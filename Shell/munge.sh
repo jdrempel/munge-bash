@@ -6,34 +6,7 @@
 # Date: 13 Apr 2022                                   #
 #######################################################
 
-# Useful for debugging when enabled
-# set -e
-# set -x
-
-# Allow filename patterns which match no files to expand to a null string
-shopt -s nullglob
-
-MUNGE_ROOT_DIR=../..
-
-if [[ -n $1 ]]; then
-    MUNGE_PLATFORM=$1
-fi
-
-if [[ -z $MUNGE_PLATFORM ]]; then
-    MUNGE_PLATFORM=PC
-fi
-
-if [[ -z $MUNGE_LANGDIR ]]; then
-    MUNGE_LANGDIR=ENG
-fi
-
-MUNGE_BIN_DIR=$(pwd)/${MUNGE_ROOT_DIR}/../ToolsFL/bin
-export WINEPATH=$(pwd)/../../../ToolsFL/bin
-
-MUNGE_ARGS="-checkdate -continue -platform $MUNGE_PLATFORM"
-SHADER_MUNGE_ARGS="-continue -platform $MUNGE_PLATFORM"
-MUNGE_DIR=MUNGED/$MUNGE_PLATFORM
-OUTPUT_DIR=${MUNGE_ROOT_DIR}/_LVL_${MUNGE_PLATFORM}
+source ../utils.sh $1 debug
 
 LOCAL_MUNGE_LOG=$(pwd)/${MUNGE_PLATFORM}_MungeLog.txt
 if [[ -z $MUNGE_LOG ]]; then
@@ -58,8 +31,7 @@ if [[ -n "$MUNGE_OVERRIDE_DIR" ]]; then
 fi
 SOURCE_DIR="$SOURCE_DIR $MUNGE_ROOT_DIR/$SOURCE_SUBDIR"
 
-wine ConfigMunge -inputfile '*.mcfg' $MUNGE_ARGS -sourcedir $SOURCE_DIR -outputdir \
-    $MUNGE_DIR -hashstrings 2>>$MUNGE_LOG
+config_munge '*.mcfg'
 mv -f ConfigMunge.log configmunge_mcfg.log
 
 for MLST in $MUNGE_ROOT_DIR/$SOURCE_SUBDIR/$MUNGE_PLATFORM/*.mlst; do
@@ -92,33 +64,27 @@ if [[ -n "$MUNGE_OVERRIDE_DIR" ]]; then
 fi
 SOURCE_DIR="$SOURCE_DIR $MUNGE_ROOT_DIR/$SOURCE_SUBDIR"
 
-wine ConfigMunge -inputfile 'effects/*.fx' $MUNGE_ARGS -sourcedir $SOURCE_DIR \
-    -outputdir $MUNGE_DIR 2>>$MUNGE_LOG
+config_munge 'effects/*.fx'
 mv -f ConfigMunge.log configmunge_fx.log
-wine ScriptMunge -inputfile 'scripts/*.lua' $MUNGE_ARGS -sourcedir $SOURCE_DIR \
-    -outputdir $MUNGE_DIR 2>>$MUNGE_LOG
 
-wine ${MUNGE_PLATFORM}_TextureMunge -inputfile '$*.tga' $MUNGE_ARGS -sourcedir \
-    $SOURCE_DIR -outputdir $MUNGE_DIR 2>>$MUNGE_LOG
-wine FontMunge -inputfile 'fonts/*.fff' $MUNGE_ARGS -sourcedir $SOURCE_DIR -outputdir \
-    $MUNGE_DIR 2>>$MUNGE_LOG
-wine ${MUNGE_PLATFORM}_ModelMunge -inputfile '$*.msh' $MUNGE_ARGS -sourcedir \
-    $SOURCE_DIR -outputdir $MUNGE_DIR 2>>$MUNGE_LOG
+script_munge 'scripts/*.lua'
+texture_munge '$*.tga'
+font_munge 'fonts/*.fff'
+model_munge '$*.msh'
+
 if [[ $MUNGE_PLATFORM == PS2 ]]; then
-    wine BinMunge -inputfile 'ps2bin/*.ps2bin' $MUNGE_ARGS -sourcedir $SOURCE_DIR \
-        -outputdir $MUNGE_DIR 2>>$MUNGE_LOG
+    bin_munge 'ps2bin/*.ps2bin'
 fi
 
 # -------- Build LVL Files ---------
 
-wine LevelPack -inputfile shell.req -common ../Common/MUNGED/$MUNGE_PLATFORM/core.files \
-    ../Common/MUNGED/$MUNGE_PLATFORM/common.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
-    -inputdir $MUNGE_DIR -outputdir $OUTPUT_DIR 2>>$MUNGE_LOG
+level_pack shell.req $OUTPUT_DIR \
+    "../Common/MUNGED/$MUNGE_PLATFORM/core.files
+     ../Common/MUNGED/$MUNGE_PLATFORM/common.files" \
 
 if [[ $MUNGE_PLATFORM == PS2 ]]; then
-    wine LevelPack -inputfile shellps2.req -common \
-        ../Common/MUNGED/$MUNGE_PLATFORM/core.files $MUNGE_ARGS -sourcedir $SOURCE_DIR \
-        -inputdir $MUNGE_DIR -outputdir $OUTPUTDIR 2>>$MUNGE_LOG
+    level_pack shellps2.req $OUTPUTDIR \
+        "../Common/MUNGED/$MUNGE_PLATFORM/core.files"
 fi
 
         

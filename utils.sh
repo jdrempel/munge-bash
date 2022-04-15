@@ -60,7 +60,7 @@ munge () {
     [[ $1 =~ Model|Shader|Texture ]] && PP=${MUNGE_PLATFORM,,}_
 
     HASH=
-    [[ $1 == Movie ]] && HASH=-hashstrings
+    [[ $1 =~ Movie || "$@" =~ mcfg ]] && HASH=-hashstrings
 
     wine $PP${1}Munge \
         -inputfile "${ARGS[@]:1:3}" \
@@ -150,7 +150,11 @@ level_pack () {
         COMMON=-common
         COMARRAY=($3)
         for COMFILE in ${COMARRAY[@]}; do
-            COMMON="$COMMON $MUNGE_DIR/$COMFILE"
+            if [[ "$COMFILE" =~ ^\.\..* ]]; then
+                COMMON="$COMMON $COMFILE"
+            else
+                COMMON="$COMMON $MUNGE_DIR/$COMFILE"
+            fi
         done
     fi
 
