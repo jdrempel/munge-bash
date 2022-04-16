@@ -6,7 +6,7 @@
 # Date: 13 Apr 2022                                   #
 #######################################################
 
-source ../utils.sh $1 debug
+source ../utils.sh $1
 
 LOCAL_MUNGE_LOG=$(pwd)/${MUNGE_PLATFORM}_MungeLog.txt
 if [[ -z $MUNGE_LOG ]]; then

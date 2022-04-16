@@ -6,7 +6,7 @@
 # Date: 13 Apr 2022                                   #
 #######################################################
 
-source ../utils.sh $1 debug
+source ../utils.sh $1
 OUTPUT_DIR=${OUTPUT_DIR}/FPM/COM
 
 LOCAL_MUNGE_LOG=$(pwd)/MungeFpmLog.txt

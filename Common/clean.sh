@@ -9,8 +9,8 @@
 if [[ -z $1 ]]; then
     PLATFORMS=('PC' 'PS2' 'XBOX')
     for PLATFORM in ${PLATFORMS[@]}; do
-        rm -rvf MUNGED/${PLATFORM}
+        rm -rf MUNGED/${PLATFORM}
     done
 else
-    rm -rvf MUNGED/$1
+    rm -rf MUNGED/$1
 fi

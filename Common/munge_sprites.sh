@@ -6,7 +6,7 @@
 # Date: 12 Apr 2022                                   #
 #######################################################
 
-source ../utils.sh $1 debug
+source ../utils.sh $1
 
 LOCAL_MUNGE_LOG=$(pwd)/MungeSpritesLog.txt
 if [[ -z $MUNGE_LOG ]]; then
