@@ -16,7 +16,7 @@
 # Allow filename patterns which match no files to expand to a null string
 shopt -s nullglob
 
-MUNGE_ROOT_DIR=../..
+export MUNGE_ROOT_DIR=../..
 
 if [[ -n $1 ]]; then
     MUNGE_PLATFORM=$1
@@ -33,10 +33,10 @@ fi
 MUNGE_BIN_DIR=$(pwd)/${MUNGE_ROOT_DIR}/../ToolsFL/bin
 export WINEPATH=$(pwd)/../../../ToolsFL/bin
 
-MUNGE_ARGS="-checkdate -continue -platform $MUNGE_PLATFORM"
-SHADER_MUNGE_ARGS="-continue -platform $MUNGE_PLATFORM"
-MUNGE_DIR=MUNGED/$MUNGE_PLATFORM
-OUTPUT_DIR=${MUNGE_ROOT_DIR}/_LVL_${MUNGE_PLATFORM}
+export MUNGE_ARGS="-checkdate -continue -platform $MUNGE_PLATFORM"
+export SHADER_MUNGE_ARGS="-continue -platform $MUNGE_PLATFORM"
+export MUNGE_DIR=MUNGED/$MUNGE_PLATFORM
+export OUTPUT_DIR=${MUNGE_ROOT_DIR}/_LVL_${MUNGE_PLATFORM}
 
 LOCAL_MUNGE_LOG=$(pwd)/${MUNGE_PLATFORM}_MungeLog.txt
 if [[ -z $MUNGE_LOG ]]; then

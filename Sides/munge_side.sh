@@ -118,7 +118,7 @@ if [[ "$1" != Common ]]; then
         -outputdir $OUTPUT_DIR \
         2>>$MUNGE_LOG
     mv -f LevelPack.log levelpack_side.log
-    ./../munge_fpm.sh $1
+    ./../munge_fpm.sh $1 $MUNGE_PLATFORM
 fi
 
 cd $MUNGE_SIDE_STARTING_DIR

@@ -6,6 +6,8 @@
 # Date: 15 Apr 2022                                   #
 #######################################################
 
+set -e && set -x
+
 if [[ -z "$1" ]]; then
     echo "Usage: munge_fpm.sh <sidename> [platform]"
     exit 1
@@ -37,6 +39,9 @@ if [[ -n $MUNGE_OVERRIDE_DIR ]]; then
     done
 fi
 SOURCE_DIR="$SOURCE_DIR $MUNGE_ROOT_DIR/$SOURCE_SUBDIR"
+
+echo $MUNGE_DIR ...
+echo $MUNGE_ROOT_DIR ...
 
 mkdir -p $MUNGE_DIR
 mkdir -p $MUNGE_ROOT_DIR/_LVL_$MUNGE_PLATFORM/FPM/$1
