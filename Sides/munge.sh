@@ -61,7 +61,6 @@ for DIR in ${DIRS[@]}; do
     fi
 
     if [[ "$DNAME" != Common ]]; then
-        echo "pwddddd $PWD"
         echo "munge_side $DNAME $MUNGE_PLATFORM"
         ./munge_side.sh $DNAME $MUNGE_PLATFORM
     fi

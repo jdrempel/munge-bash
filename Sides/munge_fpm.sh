@@ -6,14 +6,14 @@
 # Date: 15 Apr 2022                                   #
 #######################################################
 
-set -e && set -x
+# set -e && set -x
 
 if [[ -z "$1" ]]; then
     echo "Usage: munge_fpm.sh <sidename> [platform]"
     exit 1
 fi
 
-if [[ -z "$2" ]]; then
+if [[ -n "$2" ]]; then
     MUNGE_PLATFORM=$2
 else
     MUNGE_PLATFORM=PC

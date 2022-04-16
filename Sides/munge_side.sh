@@ -7,7 +7,7 @@
 #######################################################
 
 # Note: $2 must be given in this case, since $1 is the side name not the platform
-source ../utils.sh $2 debug
+source ../utils.sh $2
 
 # Note: 3 ..'s required here
 MUNGE_ROOT_DIR=../../..
