@@ -101,6 +101,10 @@ path_munge () {
     munge Path "$@"
 }
 
+path_planning_munge () {
+    munge PathPlanning "$@"
+}
+
 model_munge () {
     munge ${MUNGE_PLATFORM,,}_Model "$@"
 }
