@@ -52,7 +52,8 @@ fi
 
 # Performs a generic munge operation. Positional args are:
 #   $1: munger binary prefix (e.g. Config or Odf)
-#   $2,3,4: input files'
+#   $2,3: input files'
+#   $4: source subdirectory
 munge () {
 
     ARGS=("$@")
@@ -60,10 +61,12 @@ munge () {
     HASH=
     [[ $1 =~ Movie || "$@" =~ mcfg ]] && HASH=-hashstrings
 
+    SUBSOURCE_DIR="${ARGS[3]}"
+
     wine ${1}Munge \
-        -inputfile "${ARGS[@]:1:3}" \
+        -inputfile "${ARGS[@]:1:2}" \
         $MUNGE_ARGS \
-        -sourcedir $SOURCE_DIR \
+        -sourcedir $SOURCE_DIR/$SUBSOURCE_DIR \
         -outputdir $MUNGE_DIR \
         $HASH \
         2>>$MUNGE_LOG

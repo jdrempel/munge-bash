@@ -46,21 +46,24 @@ done
 
 echo "munge_side Common $MUNGE_PLATFORM"
 ./munge_side.sh Common $MUNGE_PLATFORM
-MUNGED_SIDES_COMMON=1
+export MUNGED_SIDES_COMMON=1
 
 DIRS=("$MUNGE_SIDE_DIRS")
 for DIR in ${DIRS[@]}; do
 
-    if [[ ! -d "$DIR" ]]; then
+    DNAME=${DIR%/}
+
+    if [[ ! -d "$DNAME" ]]; then
         echo
-        echo "Error (Invalid Parameter): $DIR"
+        echo "Error (Invalid Parameter): $DNAME"
         echo
         exit 1
     fi
 
-    if [[ "$DIR" != Common ]]; then
-        echo "munge_side $DIR $MUNGE_PLATFORM"
-        ./munge_side.sh $DIR $MUNGE_PLATFORM
+    if [[ "$DNAME" != Common ]]; then
+        echo "pwddddd $PWD"
+        echo "munge_side $DNAME $MUNGE_PLATFORM"
+        ./munge_side.sh $DNAME $MUNGE_PLATFORM
     fi
 
 done
