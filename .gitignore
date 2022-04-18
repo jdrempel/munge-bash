@@ -1,0 +1,7 @@
+.idea/
+*.xml
+cmake-build-debug/
+
+.swbf2
+*.swp
+visualmunge
