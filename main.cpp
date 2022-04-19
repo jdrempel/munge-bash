@@ -5,12 +5,15 @@
 #define GLFW_INCLUDE_NONE
 
 #include <GLFW/glfw3.h>
-#include <chrono>
 #include <glad/gl.h>
 #include <glm/glm.hpp>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+
+#include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <thread>
 
@@ -100,8 +103,9 @@ void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
               << ": " << message << '\n';
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
+    namespace fs = std::filesystem;
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -196,7 +200,33 @@ int main(int argc, char *argv[])
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(glm::vec2));
     glVertexArrayElementBuffer(vao, ibo);
     glUseProgram(program);
-    glClearColor(1, 1, 1, 1);
+    glClearColor(0, 0, 0, 1);
+
+    auto current_path = fs::current_path();
+    auto parent_path = current_path.parent_path();
+    auto munge_path = current_path / "munge.sh";
+
+    if (!fs::exists(munge_path)) {
+        // TODO show an error window instead of new world/munge/console
+    }
+
+    std::string bf2_path_str;
+    auto bf2_storage_path = current_path / ".swbf2";
+    static bool bf2_path_exists = false;
+    if (fs::exists(bf2_storage_path)) {
+        // read the file to get the absolute path of BF2 installation
+        std::ifstream bf2_file;
+        bf2_file.open(bf2_storage_path, std::ios::in);
+        if (!bf2_file) {
+            std::cerr << "File .swbf2 not found." << std::endl;
+            exit(1);
+        }
+        std::getline(bf2_file, bf2_path_str);
+        bf2_file.close();
+        if (!bf2_path_str.empty()) {
+            bf2_path_exists = true;
+        }
+    }
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -216,6 +246,7 @@ int main(int argc, char *argv[])
             if (ImGui::BeginMenu("Tools")) {
                 if (ImGui::MenuItem("Set SWBF2 path...")) {
                     // Open file browser to get SWBF2 path
+                    ImGui::OpenPopup("SWBF2 Path");
                 }
                 if (ImGui::MenuItem("Options...")) {
                     // Open options menu
@@ -235,6 +266,39 @@ int main(int argc, char *argv[])
             ImGui::EndMainMenuBar();
         }
 
+        static bool path_modal_open = !bf2_path_exists;
+
+        static char bf2_path_chars[1025];
+        if (!bf2_path_exists) {
+            ImGui::OpenPopup("SWBF2 Path");
+        }
+        if (ImGui::BeginPopupModal("SWBF2 Path", nullptr, ImGuiWindowFlags_None)) {
+            ImGui::Text("Battlefront 2 GameData Directory");
+            ImGui::InputText("##bf2-path", bf2_path_chars, 1024);
+            if (ImGui::Button("OK")) {
+                bf2_path_str = std::string(bf2_path_chars);
+                if (!bf2_path_str.empty()) {
+                    auto bf2_path = fs::path(bf2_path_chars);
+                    if (fs::exists(bf2_path)) {
+                        bf2_path_exists = true;
+                        std::ofstream bf2_file;
+                        bf2_file.open(bf2_storage_path, std::ios::out);
+                        if (!bf2_file) {
+                            std::cerr << "File .swbf2 could not be created." << std::endl;
+                            exit(1);
+                        }
+                        bf2_file << bf2_path_str << std::endl;
+                        bf2_file.close();
+                        ImGui::CloseCurrentPopup();
+                    } else {
+                        ImGui::TextColored({1, 0, 0, 1}, "Path does not exist");
+                    }
+                }
+            }
+            ImGui::EndPopup();
+        }
+
+        static bool yes = bf2_path_exists;
         static char world_code_buffer[5] = {0};
         static char world_name_buffer[33] = {0};
         static char world_desc_buffer[2049] = {0};
@@ -246,62 +310,63 @@ int main(int argc, char *argv[])
 
         const ImGuiViewport *viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->WorkPos);
-        auto workSize = ImVec2{viewport->WorkSize.x, viewport->WorkSize.y * 2/3};
+        auto workSize = ImVec2{viewport->WorkSize.x, viewport->WorkSize.y * 2 / 3};
         ImGui::SetNextWindowSize(workSize);
         ImGui::SetNextWindowBgAlpha(1);
 
-        bool yes = true;
-        if (ImGui::Begin("Create New World", &yes, flags)) {
-            {
-                ImGui::Text("3-Letter World Name");
-                ImGui::SameLine();
-                ImGui::SetNextItemWidth(3 * ImGui::GetFontSize());
-                ImGui::InputTextWithHint("##world-code", "ABC", world_code_buffer, 4);
-                ImGui::SameLine();
-                ImGui::Text("Full World Name");
-                ImGui::SameLine();
-                ImGui::SetNextItemWidth(-1);
-                ImGui::InputTextWithHint("##world-name", "Snazzy ModWorld", world_name_buffer, 32);
-            }
-            {
-                ImGui::Text("World Description (3 lines max)");
-                ImGui::SetNextItemWidth(-1);
-                ImGui::InputTextMultiline("##world-desc", world_desc_buffer, 2048);
-            }
-            {
-                ImGui::Checkbox("Space Map", &space_map);
-                ImGui::SameLine(ImGui::GetWindowWidth()/2);
-                ImGui::BeginGroup();
+        if (bf2_path_exists) {
+            if (ImGui::Begin("Create New World", &yes, flags)) {
                 {
-                    ImGui::Checkbox("Conquest", &conquest);
-                    ImGui::Checkbox("2-Flag CTF", &ctf2);
-                    ImGui::Checkbox("1-Flag CTF", &ctf1);
-                    ImGui::Checkbox("Assault", &assault);
+                    ImGui::Text("3-Letter World Name");
+                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(3 * ImGui::GetFontSize());
+                    ImGui::InputTextWithHint("##world-code", "ABC", world_code_buffer, 4);
+                    ImGui::SameLine();
+                    ImGui::Text("Full World Name");
+                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(-1);
+                    ImGui::InputTextWithHint("##world-name", "Snazzy ModWorld", world_name_buffer, 32);
                 }
-                ImGui::EndGroup();
-            }
-            if (ImGui::Button("Create World")) {
-                // Munge!
+                {
+                    ImGui::Text("World Description (3 lines max)");
+                    ImGui::SetNextItemWidth(-1);
+                    ImGui::InputTextMultiline("##world-desc", world_desc_buffer, 2048);
+                }
+                {
+                    ImGui::Checkbox("Space Map", &space_map);
+                    ImGui::SameLine(ImGui::GetWindowWidth() / 2);
+                    ImGui::BeginGroup();
+                    {
+                        ImGui::Checkbox("Conquest", &conquest);
+                        ImGui::Checkbox("2-Flag CTF", &ctf2);
+                        ImGui::Checkbox("1-Flag CTF", &ctf1);
+                        ImGui::Checkbox("Assault", &assault);
+                    }
+                    ImGui::EndGroup();
+                }
+                if (ImGui::Button("Create World")) {
+                    // Munge!
+                }
             }
             ImGui::End();
-        }
 
-        auto mungePos = ImVec2{viewport->WorkPos};
-        ImGui::SetNextWindowPos(mungePos);
-        ImGui::SetNextWindowSize(workSize);
-        ImGui::SetNextWindowBgAlpha(1);
-        if (ImGui::Begin("Munge", &yes, flags)) {
+            auto mungePos = ImVec2{viewport->WorkPos};
+            ImGui::SetNextWindowPos(mungePos);
+            ImGui::SetNextWindowSize(workSize);
+            ImGui::SetNextWindowBgAlpha(1);
+            if (ImGui::Begin("Munge", &yes, flags)) {
 
+            }
             ImGui::End();
-        }
 
-        auto consolePos = ImVec2{viewport->WorkPos.x, viewport->WorkSize.y * 2/3};
-        auto consoleSize = ImVec2{viewport->WorkSize.x, viewport->WorkSize.y / 3};
-        ImGui::SetNextWindowPos(consolePos);
-        ImGui::SetNextWindowSize(consoleSize);
-        ImGui::SetNextWindowBgAlpha(1);
-        if (ImGui::Begin("Console", &yes, flags)) {
+            auto consolePos = ImVec2{viewport->WorkPos.x, viewport->WorkSize.y * 2 / 3};
+            auto consoleSize = ImVec2{viewport->WorkSize.x, viewport->WorkSize.y / 3};
+            ImGui::SetNextWindowPos(consolePos);
+            ImGui::SetNextWindowSize(consoleSize);
+            ImGui::SetNextWindowBgAlpha(1);
+            if (ImGui::Begin("Console", &yes, flags)) {
 
+            }
             ImGui::End();
         }
 
