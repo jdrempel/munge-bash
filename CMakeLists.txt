@@ -16,7 +16,7 @@ find_package(PkgConfig)
 include_directories(include)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/..)
-set(SOURCE_FILES main.cpp main.cpp)
+set(SOURCE_FILES src/main.cpp src/BF2Path.cpp src/BF2Path.h)
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCE_FILES})
 
 target_link_libraries(

@@ -13,10 +13,10 @@
 
 #include <chrono>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <regex>
 #include <thread>
+#include "BF2Path.h"
 
 bool isExistingModWorld(std::filesystem::path &path)
 {
@@ -210,30 +210,18 @@ int main(int argc, char *argv[]) {
     glUseProgram(program);
     glClearColor(0, 0, 0, 1);
 
+    auto bf2_path = BF2Path();
+
+    if (BF2Path::storage_exists()) {
+        bf2_path.storage_read();
+    }
+
     auto current_path = fs::current_path();
     auto parent_path = current_path.parent_path();
     auto munge_path = current_path / "munge.sh";
 
     if (!fs::exists(munge_path)) {
         // TODO show an error window instead of new world/munge/console
-    }
-
-    std::string bf2_path_str;
-    auto bf2_storage_path = current_path / ".swbf2";
-    static bool bf2_path_exists = false;
-    if (fs::exists(bf2_storage_path)) {
-        // read the file to get the absolute path of BF2 installation
-        std::ifstream bf2_file;
-        bf2_file.open(bf2_storage_path, std::ios::in);
-        if (!bf2_file) {
-            std::cerr << "File .swbf2 not found." << std::endl;
-            exit(1);
-        }
-        std::getline(bf2_file, bf2_path_str);
-        bf2_file.close();
-        if (!bf2_path_str.empty()) {
-            bf2_path_exists = true;
-        }
     }
 
     while (!glfwWindowShouldClose(window)) {
@@ -243,36 +231,16 @@ int main(int argc, char *argv[]) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        static char bf2_path_chars[1025];
-        if (ImGui::BeginPopupModal("SWBF2 Path", nullptr, ImGuiWindowFlags_None)) {
-            ImGui::Text("Battlefront 2 GameData Directory");
-            ImGui::InputText("##bf2-path", bf2_path_chars, 1025);
-            if (ImGui::Button("OK")) {
-                bf2_path_str = std::string(bf2_path_chars);
-                if (!bf2_path_str.empty()) {
-                    auto bf2_path = fs::path(bf2_path_chars);
-                    if (fs::exists(bf2_path)) {
-                        bf2_path_exists = true;
-                        std::ofstream bf2_file;
-                        bf2_file.open(bf2_storage_path, std::ios::out);
-                        if (!bf2_file) {
-                            std::cerr << "File .swbf2 could not be created." << std::endl;
-                            exit(1);
-                        }
-                        bf2_file << bf2_path_str << std::endl;
-                        bf2_file.close();
-                        ImGui::CloseCurrentPopup();
-                    } else {
-                        ImGui::TextColored({1, 0, 0, 1}, "Path does not exist");
-                    }
-                }
-            }
-            ImGui::EndPopup();
+        if (!bf2_path.exists()) {
+            ImGui::OpenPopup("SWBF2 Path");
+            bf2_path.display_prompt();
         }
 
+        std::string menu_action;
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("File")) {
                 if (ImGui::MenuItem("Quit", "Ctrl+Q")) {
+                    menu_action = "Quit";
                     break;
                 }
                 ImGui::EndMenu();
@@ -281,10 +249,11 @@ int main(int argc, char *argv[]) {
             if (ImGui::BeginMenu("Tools")) {
                 if (ImGui::MenuItem("Set SWBF2 path...")) {
                     // Open file browser to get SWBF2 path
-                    ImGui::OpenPopup("SWBF2 Path");
+                    menu_action = "SWBF2 Path";
                 }
                 if (ImGui::MenuItem("Options...")) {
                     // Open options menu
+                    menu_action = "Options";
                 }
                 ImGui::EndMenu();
             }
@@ -292,22 +261,21 @@ int main(int argc, char *argv[]) {
             if (ImGui::BeginMenu("Help")) {
                 if (ImGui::MenuItem("Documentation")) {
                     // Open window with basic help text
+                    menu_action = "Documentation";
                 }
                 if (ImGui::MenuItem("About")) {
                     // Open window with developer info and a hyperlink to the github page
+                    menu_action = "About";
                 }
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
         }
 
-        static bool path_modal_open = !bf2_path_exists;
-
-        if (!bf2_path_exists) {
+        if (menu_action == "SWBF2 Path")
             ImGui::OpenPopup("SWBF2 Path");
-        }
 
-        static bool yes = bf2_path_exists;
+        static bool yes;
         static char world_code_buffer[4] = {0};
         static char world_name_buffer[33] = {0};
         static char world_desc_buffer[2049] = {0};
@@ -321,7 +289,7 @@ int main(int argc, char *argv[]) {
         auto workSize = ImVec2{viewport->WorkSize.x, viewport->WorkSize.y * 2 / 3};
         auto mungePos = ImVec2{viewport->WorkPos};
 
-        if (bf2_path_exists) {
+        if (bf2_path.exists()) {
             if (!isExistingModWorld(current_path)) {
                 ImGui::SetNextWindowPos(viewport->WorkPos);
                 ImGui::SetNextWindowSize(workSize);
@@ -380,6 +348,8 @@ int main(int argc, char *argv[]) {
             }
             ImGui::End();
         }
+
+        bf2_path.display_prompt();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
